@@ -18,8 +18,8 @@ const Header = () => {
           to="/"
           className="self-center whitespace-nowrap text-sm sm:text-xl font-semibold dark:text-white"
         >
-          <span className="px-2 py-1 bg-gradient-to-r from-red-700 via-orange-500 to-yellow-400 rounded-lg text-white">
-            Hem's
+          <span className="px-2 py-1 bg-gradient-to-r from-purple-900 via-blue-800 to-blue-400 rounded-lg text-white">
+            Reflective
           </span>{" "}
           Blog
         </Link>
