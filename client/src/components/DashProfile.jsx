@@ -24,9 +24,11 @@ const DashProfile = () => {
   const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
   const [imageFileUploadError, setImageFileUploadError] = useState(null);
   const [imageFileUploading, setImageFileUploading] = useState(null);
-
+  const [updateUserSuccess, setUpdateUserSuccess] = useState(null);
+  const [updateUserError, setUpdateUserError] = useState(null);
   const [formData, setFormData] = useState({});
   const dispatch = useDispatch();
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -76,7 +78,14 @@ const DashProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setUpdateUserError(null);
+    setUpdateUserSuccess(null);
     if (Object.keys(formData).length === 0) {
+      setUpdateUserError("No Changes made");
+      return;
+    }
+    if (imageFileUploading) {
+      setUploadUserError("Please wait for image to upload");
       return;
     }
     try {
@@ -85,18 +94,21 @@ const DashProfile = () => {
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application.json",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (!res.ok) {
         dispatch(updateFailure(data.message));
+        setUpdateUserError(data.message);
       } else {
         dispatch(updateSuccess(data));
+        setUpdateUserSuccess("Profile updated successfully");
       }
     } catch (error) {
       dispatch(updateFailure(error.message));
+      setUpdateUserError(error.message);
     }
   };
   const handleChange = (e) => {
@@ -104,7 +116,7 @@ const DashProfile = () => {
   };
   console.log(formData);
   return (
-    <div className="max-w-lg mx-auto w-full">
+    <div className="max-w-lg mx-auto w-full mt-20">
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">
         <input
           type="file"
@@ -171,9 +183,19 @@ const DashProfile = () => {
         </div>
       </form>
       <div className="text-red-500 flex justify-between mt-3">
-        <span>Edit</span>
         <span>Delete</span>
+        <span>Sign Out</span>
       </div>
+      {updateUserSuccess && (
+        <Alert className="mt-4" color="success">
+          {updateUserSuccess}
+        </Alert>
+      )}
+      {updateUserError && (
+        <Alert className="mt-4" color="failure">
+          {updateUserError}
+        </Alert>
+      )}
     </div>
   );
 };
