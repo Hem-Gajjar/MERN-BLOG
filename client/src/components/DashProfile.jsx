@@ -1,46 +1,178 @@
-import { TextInput } from "flowbite-react";
-import React from "react";
+import { Alert, Button, TextInput } from "flowbite-react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { CircularProgressbar } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { app } from "../firebase";
+import {
+  updateFailure,
+  updateSuccess,
+  updateStart,
+} from "../redux/user/userSlice";
+import { useDispatch } from "react-redux";
 const DashProfile = () => {
   const { currentUser } = useSelector((state) => state.user);
-  console.log(currentUser);
+  const filePickerRef = useRef();
+  const [imageFile, setImageFile] = useState(null);
+  const [imageFileUrl, setImageFileUrl] = useState(null);
+  const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
+  const [imageFileUploadError, setImageFileUploadError] = useState(null);
+  const [imageFileUploading, setImageFileUploading] = useState(null);
 
+  const [formData, setFormData] = useState({});
+  const dispatch = useDispatch();
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImageFileUrl(URL.createObjectURL(file));
+    }
+  };
+
+  useEffect(() => {
+    if (imageFile) {
+      uploadImage();
+    }
+  }, [imageFile]);
+
+  const uploadImage = async () => {
+    setImageFileUploadError(null);
+    setImageFileUploading(null);
+    const storage = getStorage(app);
+    const fileName = new Date().getTime() + imageFile.name;
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, imageFile);
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setImageFileUploadProgress(progress.toFixed(0));
+      },
+      (error) => {
+        setImageFileUploadError(
+          "Could not upload image (File must be less than 2MB )"
+        );
+        setImageFile(null);
+        setImageFileUrl(null);
+        setImageFileUploadProgress(false);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          setImageFileUrl(downloadURL);
+          setFormData({ ...formData, profilePicture: downloadURL });
+          setImageFileUploadProgress(null);
+          setImageFileUploading(false);
+        });
+      }
+    );
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (Object.keys(formData).length === 0) {
+      return;
+    }
+    try {
+      dispatch(updateStart());
+
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application.json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        dispatch(updateFailure(data.message));
+      } else {
+        dispatch(updateSuccess(data));
+      }
+    } catch (error) {
+      dispatch(updateFailure(error.message));
+    }
+  };
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+  console.log(formData);
   return (
-    <div>
-      <div className="max-w-lg mx-auto w-full">
-        <form className="flex flex-col gap-2">
-          <h1 className="text-center text-3xl dark:text-white ">Profile</h1>
-          <div className="w-32 h-32 self-center">
-            <img
-              className="rounded-full w-full h-full border-8 border-[lightgray] object-cover"
-              src={currentUser.profilePicture}
+    <div className="max-w-lg mx-auto w-full">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          ref={filePickerRef}
+          hidden
+        />
+        <h1 className="text-center text-3xl dark:text-white ">Profile</h1>
+        <div
+          className="relative w-32 h-32 self-center cursor-pointer shadow-md"
+          onClick={() => filePickerRef.current.click()}
+        >
+          {imageFileUploadProgress && (
+            <CircularProgressbar
+              value={imageFileUploadProgress || 0}
+              text={`${imageFileUploadProgress}%`}
+              strokeWidth={5}
+              styles={{
+                root: {
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                },
+                path: {
+                  store: `rgba(62, 152, 199, ${imageFileUploadProgress / 100})`,
+                },
+              }}
             />
-          </div>
-          <div className="flex flex-col gap-3 mt-2">
-            <TextInput
-              type="text"
-              id="username"
-              placeholder="Username"
-              defaultValue={currentUser.username}
-            />
-            <TextInput
-              type="text"
-              id="email"
-              placeholder="Email"
-              defaultValue={currentUser.email}
-            />
-            <TextInput
-              type="text"
-              id="password"
-              placeholder="Change you password"
-            />
-            <Button type="submit">Submit</Button>
-          </div>
-        </form>
-        <div className="text-red-500 flex justify-between mt-3">
-          <span>Edit</span>
-          <span>Delete</span>
+          )}
+          <img
+            className="rounded-full w-full h-full border-8 border-[lightgray] object-cover"
+            src={imageFileUrl || currentUser.profilePicture}
+            alt="profile pic"
+          />
         </div>
+        {imageFileUploadError && (
+          <Alert color="failure">{imageFileUploadError}</Alert>
+        )}
+        <div className="flex flex-col gap-3 mt-2">
+          <TextInput
+            type="text"
+            id="username"
+            placeholder="Username"
+            defaultValue={currentUser.username}
+            onChange={handleChange}
+          />
+          <TextInput
+            type="text"
+            id="email"
+            placeholder="Email"
+            defaultValue={currentUser.email}
+            onChange={handleChange}
+          />
+          <TextInput
+            type="text"
+            id="password"
+            placeholder="Change you password"
+            onChange={handleChange}
+          />
+          <Button type="submit">Submit</Button>
+        </div>
+      </form>
+      <div className="text-red-500 flex justify-between mt-3">
+        <span>Edit</span>
+        <span>Delete</span>
       </div>
     </div>
   );
