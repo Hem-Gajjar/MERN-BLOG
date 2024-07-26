@@ -5,10 +5,7 @@ import { BsFacebook, BsGithub, BsInstagram, BsLinkedin } from "react-icons/bs";
 
 const FooterComp = () => {
   return (
-    <Footer
-      container
-      className="border border-t-2 border-y-4 rounded-none bg-gradient-to-r from-white via-purple-100 to-teal-100   border-teal-500"
-    >
+    <Footer container className="border-t-4 dark:border-gray-700 rounded-none ">
       <div>
         <div>
           <div>
@@ -16,7 +13,7 @@ const FooterComp = () => {
               to="/"
               className="self-center whitespace-nowrap text-lg sm:text-xl font-semibold dark:text-white"
             >
-              <span className="px-2 py-1 bg-gradient-to-r from-purple-900 via-blue-800 to-blue-400 rounded-lg text-white">
+              <span className="px-2 py-1 bg-gradient-to-tr from-purple-950 via-sky-800 to-blue-600 rounded-lg text-white">
                 Reflective
               </span>{" "}
               Blog

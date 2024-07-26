@@ -1,3 +1,52 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+* {
+    font-family: "ubuntu";
+}
+
+.google-button {
+    background: linear-gradient(to right, #4285f4, #34a853, #fbbc05, #ea4335);
+    background-size: 200% 100%;
+    transition: background-position 0.4s ease;
+}
+
+.google-button:hover {
+    background-position: right center;
+}
+
+.sign-button {
+    background: linear-gradient(to right, #750aaa, #229de9);
+    background-size: 400% 100%;
+    transition: background-position 0.3s ease;
+}
+
+.sign-button:hover {
+    background-position: right center;
+}
+
+.theme-button {
+    /* background: none; */
+    background: linear-gradient(to right, #031563, #0030b5);
+    background-size: 800% 100%;
+    transition: background-position 0.4s ease;
+}
+
+.theme-button:hover {
+    background-position: right center;
+}
+
+.avatar-design {
+    border-radius: 100px;
+}
+
+.avatar-design:hover {
+    transition: all 0.3s ease;
+    box-shadow: 1px 1px 50px rgb(50, 1, 122);
+    border-radius: 100px;
+}
+
+.dropdown_style {
+    border: 2px solid rgb(100, 100, 100);
+    color: black;
+}
