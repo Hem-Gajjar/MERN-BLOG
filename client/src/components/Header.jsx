@@ -15,6 +15,22 @@ import { Link, useLocation } from "react-router-dom";
 import { AiOutlineSearch } from "react-icons/ai";
 import { FaMoon } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import { signOutSuccess } from "../redux/user/userSlice";
+const handleSignOut = async () => {
+  try {
+    const res = await fetch("/api/user/signout", {
+      method: "POST",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      console.log(data.message);
+    } else {
+      dispatch(signOutSuccess());
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 const Header = () => {
   const path = useLocation().pathname;
   const { currentUser } = useSelector((state) => state.user);
@@ -71,7 +87,7 @@ const Header = () => {
                   <Dropdown.Item>Profile</Dropdown.Item>
                 </Link>
                 <Dropdown.Divider />
-                <Dropdown.Item>Sign out</Dropdown.Item>
+                <Dropdown.Item onClick={handleSignOut}>Sign out</Dropdown.Item>
               </Dropdown>
             ) : (
               <Link to="/sign-in">

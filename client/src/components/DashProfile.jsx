@@ -12,6 +12,7 @@ import {
 
 import { app } from "../firebase";
 import {
+  signOutSuccess,
   updateFailure,
   updateSuccess,
   updateStart,
@@ -21,6 +22,7 @@ import {
 } from "../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
+import { errorHandler } from "../../../server/utils/error";
 const DashProfile = () => {
   const { currentUser } = useSelector((state) => state.user);
   const filePickerRef = useRef();
@@ -134,6 +136,21 @@ const DashProfile = () => {
       setUpdateUserError(error.message);
     }
   };
+  const handleSignOut = async () => {
+    try {
+      const res = await fetch("/api/user/signout", {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.log(data.message);
+      } else {
+        dispatch(signOutSuccess());
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -209,7 +226,9 @@ const DashProfile = () => {
         <span className="cursor-pointer" onClick={() => setShowModal(true)}>
           Delete
         </span>
-        <span className="cursor-pointer">Sign Out</span>
+        <span onClick={handleSignOut} className="cursor-pointer">
+          Sign Out
+        </span>
       </div>
       {updateUserSuccess && (
         <Alert className="mt-4" color="success">
