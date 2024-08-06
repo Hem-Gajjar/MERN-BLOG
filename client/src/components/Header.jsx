@@ -43,7 +43,7 @@ const Header = () => {
             className="self-center whitespace-nowrap text-sm sm:text-xl font-semibold dark:text-white"
           >
             <span className="px-2 py-1 bg-gradient-to-tr from-purple-950 via-sky-800 to-blue-600 rounded-lg text-white">
-              Reflect
+              Tech Tonic
             </span>{" "}
             BLOG
           </Link>

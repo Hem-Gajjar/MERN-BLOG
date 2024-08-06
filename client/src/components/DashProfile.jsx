@@ -9,7 +9,7 @@ import {
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
-
+import { Link } from "react-router-dom";
 import { app } from "../firebase";
 import {
   signOutSuccess,
@@ -24,7 +24,7 @@ import { useDispatch } from "react-redux";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { errorHandler } from "../../../server/utils/error";
 const DashProfile = () => {
-  const { currentUser } = useSelector((state) => state.user);
+  const { currentUser, error, loading } = useSelector((state) => state.user);
   const filePickerRef = useRef();
   const [imageFile, setImageFile] = useState(null);
   const [imageFileUrl, setImageFileUrl] = useState(null);
@@ -219,7 +219,20 @@ const DashProfile = () => {
             placeholder="Change you password"
             onChange={handleChange}
           />
-          <Button type="submit">Submit</Button>
+          <Button type="submit" disabled={loading || imageFileUploading}>
+            {loading ? "Loading..." : "Update"}
+          </Button>
+          {currentUser.isAdmin && (
+            <Link to="/create-post">
+              <Button
+                className="w-full"
+                type="button"
+                gradientDuoTone="purpleToBlue"
+              >
+                Create a Post
+              </Button>
+            </Link>
+          )}
         </div>
       </form>
       <div className="text-red-500 flex justify-between mt-3">
