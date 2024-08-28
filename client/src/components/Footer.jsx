@@ -5,7 +5,10 @@ import { BsFacebook, BsGithub, BsInstagram, BsLinkedin } from "react-icons/bs";
 
 const FooterComp = () => {
   return (
-    <Footer container className="border-t-4 dark:border-gray-700 rounded-none ">
+    <Footer
+      container
+      className="border-t-4  bg-gray-300  dark:border-gray-700 rounded-none "
+    >
       <div>
         <div>
           <div>

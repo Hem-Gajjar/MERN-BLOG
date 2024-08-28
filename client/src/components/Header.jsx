@@ -37,7 +37,7 @@ const Header = () => {
   return (
     <div>
       <Flowbite>
-        <Navbar className=" border-b-4 dark:bg-gray-900">
+        <Navbar className=" border-b-4 bg-gray-400 dark:bg-gray-900">
           <Link
             to="/"
             className="self-center whitespace-nowrap text-sm sm:text-xl font-semibold dark:text-white"

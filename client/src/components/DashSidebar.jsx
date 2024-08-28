@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Sidebar } from "flowbite-react";
 import { useSelector } from "react-redux";
 import {
+  HiAnnotation,
   HiArrowSmRight,
   HiChartPie,
   HiDocumentText,
+  HiOutlineUserGroup,
   HiUser,
 } from "react-icons/hi";
 import { Link, useLocation } from "react-router-dom";
@@ -76,6 +78,30 @@ const DashSidebar = () => {
                 Posts
               </Sidebar.Item>
             </Link>
+          )}
+          {currentUser.isAdmin && (
+            <>
+              <Link to="/dashboard?tab=users">
+                <Sidebar.Item
+                  active={tab === "users"}
+                  icon={HiOutlineUserGroup}
+                  as="div"
+                  className="my-1"
+                >
+                  Users
+                </Sidebar.Item>
+              </Link>
+              <Link to="/dashboard?tab=comments">
+                <Sidebar.Item
+                  active={tab === "comments"}
+                  icon={HiAnnotation}
+                  as="div"
+                  className="my-1"
+                >
+                  Comments
+                </Sidebar.Item>
+              </Link>
+            </>
           )}
           <Sidebar.Item
             icon={HiArrowSmRight}

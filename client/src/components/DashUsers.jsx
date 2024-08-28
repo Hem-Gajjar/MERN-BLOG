@@ -3,22 +3,23 @@ import { useSelector } from "react-redux";
 import { Button, Modal, Table } from "flowbite-react";
 import { Link } from "react-router-dom";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
-const DashPosts = () => {
+import { FaCheck, FaTimes } from "react-icons/fa";
+const DashUsers = () => {
   const { currentUser } = useSelector((state) => state.user);
-  const [userPosts, setUserPosts] = useState([]);
+  const [users, setUsers] = useState([]);
   const [showMore, setShowMore] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [postIdToDelete, setPostIdToDelete] = useState("");
-  console.log(userPosts);
+  const [userIdToDelete, setUserIdToDelete] = useState("");
+
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchUsers = async () => {
       try {
-        const res = await fetch(`/api/post/getposts?userId=${currentUser._id}`);
+        const res = await fetch(`/api/user/getUsers`);
         const data = await res.json();
-        console.log(data.posts.length);
+        // console.log(data.posts.length);
         if (res.ok) {
-          setUserPosts(data.posts);
-          if (data.posts.length < 9) {
+          setUsers(data.users);
+          if (data.users.length < 9) {
             setShowMore(false);
           }
         }
@@ -27,20 +28,18 @@ const DashPosts = () => {
       }
     };
     if (currentUser.isAdmin) {
-      fetchPosts();
+      fetchUsers();
     }
   }, [currentUser._id]);
 
   const handleShowMore = async () => {
-    const startIndex = userPosts.length;
+    const startIndex = users.length;
     try {
-      const res = await fetch(
-        `/api/post/getposts?userId=${currentUser._id}&startIndex=${startIndex}`
-      );
+      const res = await fetch(`/api/post/getusers?startIndex=${startIndex}`);
       const data = await res.json();
       if (res.ok) {
-        setUserPosts((prev) => [...prev, ...data.posts]);
-        if (data.posts.length < 9) {
+        setUsers((prev) => [...prev, ...data.users]);
+        if (data.users.length < 9) {
           setShowMore(false);
         }
       }
@@ -49,20 +48,17 @@ const DashPosts = () => {
     }
   };
 
-  const handleDeletePost = async (req, res, next) => {
-    setShowModal(false);
+  const handleDeleteUser = async (req, res, next) => {
     try {
-      const res = await fetch(
-        `/api/post/deletepost/${postIdToDelete}/${currentUser._id}`,
-        { method: "DELETE" }
-      );
+      const res = await fetch(`/api/user/delete/${userIdToDelete}`, {
+        method: "DELETE",
+      });
       const data = await res.json();
-      if (!res.ok) {
-        console.log(data.message);
+      if (res.ok) {
+        setUsers((prev) => prev.filter((user) => user._id !== userIdToDelete));
+        setShowModal(false);
       } else {
-        setUserPosts((prev) =>
-          prev.filter((post) => post._id !== postIdToDelete)
-        );
+        console.log(data.message);
       }
     } catch (error) {
       console.log(error.message);
@@ -70,74 +66,62 @@ const DashPosts = () => {
   };
   return (
     <div className="table-auto overflow-x-scroll md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500 ">
-      {currentUser.isAdmin && userPosts.length > 0 ? (
+      {currentUser.isAdmin && users.length > 0 ? (
         <></>
       ) : (
-        <p className="dark:text-white">You have not created any posts yet</p>
+        <p className="dark:text-white">You have not created any users yet</p>
       )}
 
       <Table className="border  mt-3 border-2  dark:border-gray-400 ">
         <Table.Head key="THead">
-          <Table.HeadCell>Date Updated</Table.HeadCell>
-          <Table.HeadCell>Post Image</Table.HeadCell>
-          <Table.HeadCell>Post Title</Table.HeadCell>
-          <Table.HeadCell>Category</Table.HeadCell>
-          <Table.HeadCell>Delete</Table.HeadCell>
+          <Table.HeadCell>Date Created</Table.HeadCell>
+          <Table.HeadCell>User Image</Table.HeadCell>
+          <Table.HeadCell>Username</Table.HeadCell>
+          <Table.HeadCell>Email</Table.HeadCell>
+          <Table.HeadCell>Admin</Table.HeadCell>
           <Table.HeadCell>
             {" "}
             <span>Edit</span>
           </Table.HeadCell>
         </Table.Head>
-        {userPosts.map((post) => (
-          <Table.Body className="divide-y" kye={post._id}>
+        {users.map((user) => (
+          <Table.Body className="divide-y" key={user._id}>
             <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
               <Table.Cell>
-                {new Date(post.updatedAt).toLocaleDateString()}
+                {new Date(user.createdAt).toLocaleDateString()}
               </Table.Cell>
               <Table.Cell>
-                <Link to={`/post/${post.slug}`}>
+                <Link to={`/post/${user.slug}`}>
                   <img
-                    src={post.image}
-                    alt={post.title}
-                    className="w-20 h-10 object-cover bg-gray-500"
+                    src={user.profilePicture}
+                    alt={user.username}
+                    className="w-14 h-14 object-cover bg-gray-500 rounded-full"
                   />
                 </Link>
               </Table.Cell>
-              <Table.Cell>
-                <Link
-                  to={`/post/${post.slug}`}
-                  className="font-medium text-gray-900 dark:text-white"
-                >
-                  {post.title}
-                </Link>
-              </Table.Cell>
+              <Table.Cell>{user.username}</Table.Cell>
               <Table.Cell className="font-medium text-gray-900 dark:text-white">
-                {post.category}
+                {user.email}
               </Table.Cell>
+              <Table.Cell>
+                {user.isAdmin ? (
+                  <FaCheck className="text-green-500" />
+                ) : (
+                  <FaTimes className="text-red-500" />
+                )}
+              </Table.Cell>
+
               <Table.Cell>
                 <button
                   type="button"
                   className="text-gray-200 bg-gradient-to-r from-red-700 via-red-800 to-red-900 hover:bg-gradient-to-br font-medium rounded-lg text-xs px-2 py-2 text-center me-2 mb-2 cursor-pointer "
                   onClick={() => {
                     setShowModal(true);
-                    setPostIdToDelete(post._id);
+                    setUserIdToDelete(user._id);
                   }}
                 >
                   Delete
                 </button>
-              </Table.Cell>
-              <Table.Cell>
-                <Link
-                  className="focus:outline-none"
-                  to={`/update-post/${post._id}`}
-                >
-                  <button
-                    type="button"
-                    className="text-gray-200 bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 hover:bg-gradient-to-br  font-medium rounded-lg text-xs px-4 py-2 text-center me-2 mb-2 cursor-pointer "
-                  >
-                    Edit
-                  </button>
-                </Link>
               </Table.Cell>
             </Table.Row>
           </Table.Body>
@@ -162,10 +146,10 @@ const DashPosts = () => {
           <div className="text-center">
             <HiOutlineExclamationCircle className=" h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
             <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400 ">
-              Are you sure you want to delete your post?
+              Are you sure you want to delete your user?
             </h3>
             <div className="flex justify-center gap-4">
-              <Button color="failure" onClick={handleDeletePost}>
+              <Button color="failure" onClick={handleDeleteUser}>
                 Yes, I'm sure
               </Button>
               <Button color="gray" onClick={() => setShowModal(false)}>
@@ -179,5 +163,4 @@ const DashPosts = () => {
   );
 };
 
-export default DashPosts;
-DashPosts;
+export default DashUsers;
